@@ -14,7 +14,10 @@ class DiscordModule {
 		AJAX ajax;
 		int counter = 0;
 		
+		#include <discord/myvariables.h>
+		#ifndef MYVARIABLES
 		#include "discord/variables.h"
+		#endif
 
 		DiscordGateway gateway;
 };

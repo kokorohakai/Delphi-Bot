@@ -19,12 +19,15 @@ class JSONObject{
 		//the methods
 		void parse(string);//parses a string into a JSON Object.
 		string stringify();//converts an object, into a string.
+		void clear();//empties the object.
 	private:
 		void setType(string str);//gets the type of the object from string.
 		bool is_number(const string &s);
 		void parseObject(string str);
 		void parseArray(string str);
-		string trim(string str);
+		string trim(string str);//removes surrounding whitespace.
+		string removeEnclosure(string str);//removes surrounding enclosures of strings.
+		string propertyName(string str);//prepares a property name, removings containing quotations marks if present.
 		vector<string> split(string str,char find);
 };
 #endif

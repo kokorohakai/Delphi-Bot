@@ -2,6 +2,7 @@
 #include "global.h"
 
 void JSONObject::parse(string str){
+	clear();
 	JSONObject temp;
 	str = trim(str);
 	setType(str);
@@ -13,6 +14,7 @@ void JSONObject::parse(string str){
 			parseArray(str);
 			break;
 		case JSON_STRING:
+			str = removeEnclosure(str);
 			stringVal = str;
 			break;
 		case JSON_NUMBER:
@@ -29,25 +31,24 @@ void JSONObject::setType(string str){
 	//regex test = regex("^\\{.*:.*\\}$");
 	if ( regex_match( str, regex("^\\{.*:.*\\}$") ) ){
 		type=JSON_OBJECT;
-		cout << "it is an object" << endl;
 		return;
 	}
 	if ( regex_match(str,regex("^\\[.*\\]$"))){
 		type=JSON_ARRAY;
-		cout << "it is an array" << endl;
 		return;
 	}
 	if ( regex_match(str,regex("^'.*'$"))){
 		type=JSON_STRING;
-		cout << "it is a string" << endl;
+		return;
+	}
+	if ( regex_match(str,regex("^\".*\"$"))){
+		type=JSON_STRING;
 		return;
 	}
 	if ( is_number(str)){
 		type=JSON_NUMBER;
-		cout << "it is a number" << endl;
 		return;
 	}
-	cout << "it is unknown, and therefore treated as a string" << endl;
 	return;
 }
 
@@ -56,21 +57,22 @@ bool JSONObject::is_number(const string &s){
 }
 
 void JSONObject::parseObject( string str ){
+	str = removeEnclosure(str);
 	vector<string> parts = split(str,',');
-	cout << "Object parsed, with " << parts.size() << " properties." << endl;
 	for ( int i = 0; i < parts.size(); i++ ){
 		vector<string> obj = split(parts[i],':');
 		if (obj.size()==2){
-			JSONObject temp;
-			temp.parse(obj[1]);
-			objectVal[ obj[0] ] = temp;
+			string property = propertyName(obj[0]);
+			JSONObject value;
+			value.parse(obj[1]);
+			objectVal[ property ] = value;
 		} 
 	}
 }
 
 void JSONObject::parseArray( string str ){
+	str = removeEnclosure(str);
 	vector<string> parts = split(str,',');
-	cout << "Array parsed, containing " << parts.size() << " objects." << endl;
 	for ( int i = 0; i < parts.size(); i++){
 		JSONObject temp;
 		temp.parse(parts[i]);
@@ -88,7 +90,7 @@ vector<string> JSONObject::split( string str, char find ){
 	int pLocked=0;//parenthesis
 	int bLocked=0;//brackets
 
-	for ( int i = 1; i < str.length()-1; i++ ){
+	for ( int i = 0; i < str.length(); i++ ){
 		if ( 	str[i]==find && 
 				!sLocked &&
 				!qLocked &&
@@ -131,6 +133,25 @@ string JSONObject::trim( string str ){
 	return str;
 }
 
+string JSONObject::removeEnclosure(string str){
+	string output;
+	output = trim(str);
+	output = output.substr(1,output.length()-2);
+	output = trim(output);
+	return output;
+}
+
+string JSONObject::propertyName(string str){
+	string output = trim(str);
+	if ( regex_match(str,regex("^'.*'$"))){
+		output = removeEnclosure(str);
+	}
+	if ( regex_match(str,regex("^\".*\"$"))){
+		output = removeEnclosure(str);
+	}
+	return output;
+}
+
 string JSONObject::stringify(){
 	string str = "";
 	switch(type){
@@ -155,7 +176,7 @@ string JSONObject::stringify(){
 			str += "}";
 			break;
 		case JSON_ERROR:
-			str = stringVal;
+			str = "'" + stringVal + "'";
 			break;
 		case JSON_STRING:
 			str = "'" + stringVal + "'";
@@ -165,4 +186,39 @@ string JSONObject::stringify(){
 			break;
 	}
 	return str;
+}
+
+void JSONObject::clear(){
+	vector <JSONObject *> eStack;
+	eStack.push_back(this);
+	int n = 0;
+	while(n < eStack.size() ){
+		JSONObject *temp = eStack[n];
+		switch(temp->type){
+			case JSON_OBJECT:
+				for ( auto i = temp->objectVal.begin(); i!=temp->objectVal.end(); ++i ){
+					eStack.push_back( &i->second );
+				}
+				break;
+			case JSON_ARRAY:
+				for ( int i = 0; i < temp->arrayVal.size(); i++ ){
+					JSONObject *t = &temp->arrayVal[i];
+					eStack.push_back(t);
+				}
+				break;
+		}
+		n++;
+	}
+	while (eStack.size() > 0){
+		JSONObject *temp = eStack.back();
+		switch(temp->type){
+			case JSON_OBJECT:
+				temp->objectVal.clear();
+				break;
+			case JSON_ARRAY:
+				temp->arrayVal.clear();
+				break;
+		}
+		eStack.pop_back();
+	}
 }

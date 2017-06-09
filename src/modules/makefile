@@ -4,8 +4,8 @@ DEFINES 	:=
 OBJECTS		:=module.o discord.o
 MODULECPP	:=module.cpp
 MODULEH		:=module.h
-DISCORDCPP	:=discordModule.cpp
-DISCORDH	:=discordModule.h discord/variables.h
+DISCORDCPP	:=discordModule.cpp discord/gateway.cpp
+DISCORDH	:=discordModule.h discord/variables.h ../global.h discord/gateway.h
 #compiler options
 OPTIONS		:=-Wno-deprecated -std=gnu++11 -Wno-narrowing -fmax-errors=3
 DEBUG 		:=

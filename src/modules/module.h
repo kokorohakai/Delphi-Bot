@@ -3,8 +3,7 @@
 class Module{
 	public:
 		Module();
-		static vector <Module *> modules;
-		void load();
+		DiscordModule discordModule;
 		//shared methods
 		virtual void listen();
 };

@@ -1,20 +1,22 @@
 #variables
 DEFINES 	:=
 #files
-OBJECTS		:=core.o main.o json.o
+OBJECTS		:=core.o main.o json.o ajax.o
 MAINCPP		:=main.cpp global.cpp
 MAINH		:=global.h
 CORECPP		:=core.cpp
 COREH		:=core.h
 JSONCPP		:=json.cpp
 JSONH		:=json.h
+AJAXCPP		:=ajax.cpp
+AJAXH		:=ajax.h
 #compiler options
 OPTIONS		:=-Wno-deprecated -std=gnu++11 -Wno-narrowing -fmax-errors=3
 INCLUDES	:=-L/usr/lib/x86_64-linux-gnu/
 LIBS		:=-lcurl -lwebsockets
 FINAL		:=-o ../bin/delphi $(DEFINES) $(OPTIONS) $(INCLUDES) modules/*.o *.o $(LIBS)
 DEBUG 		:=
-HEADERS 	:=$(MAINH) $(COREH) $(JSONH)
+HEADERS 	:=$(MAINH) $(COREH) $(JSONH) $(AJAXH)
 
 all: $(OBJECTS)
 	cd modules; make all;
@@ -26,6 +28,7 @@ clean:
 	rm ../bin/delphi
 
 debug: enableDebug $(OBJECTS)
+	cd modules; make all;
 	g++ $(DEBUG) $(FINAL)
 
 enableDebug:
@@ -42,3 +45,6 @@ json.o:	$(JSONCPP) $(HEADERS)
 
 jsontest: jsontest.cpp json.cpp json.h
 	g++ jsontest.cpp json.cpp -g -ggdb -o ../jsontest
+
+ajax.o: $(AJAXCPP) $(HEADERS)
+	g++ -c $(SHARED) $(DEBUG) $(OPTIONS) $(AJAXCPP)

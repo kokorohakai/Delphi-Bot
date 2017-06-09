@@ -2,18 +2,15 @@
 
 Core::Core(){
 	cout << "Delphi bot has started." << endl;
-	modules.load();
 	think();
 }
 
 void Core::think(){
 	while (true){
+		usleep(100000);// 1/10th of a second.
 		listen();
-		usleep(100);
 	}
 }
 void Core::listen(){
-	for ( int i = 0; i < Module::modules.size(); i++ ){
-		Module::modules[i]->listen();
-	}
+	modules.listen();
 }
